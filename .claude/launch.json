@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "grab",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd backend && DEV_MODE=true DATA_DIR=../.local/data DOWNLOADS_DIR=../.local/downloads STATIC_DIR=../frontend/dist JOB_GAP_S=1 .venv/bin/uvicorn main:create_app --factory --port 8765"],
+      "port": 8765
+    }
+  ]
+}

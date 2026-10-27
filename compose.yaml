@@ -1,0 +1,30 @@
+services:
+  app:
+    build: .
+    image: grab:latest
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - grab-data:/data
+      - grab-downloads:/downloads
+    # Only for checking the app from the home machine itself. The tunnel reaches it over the compose network,
+    # and outside DEV_MODE every /api request without a Cloudflare Access token gets a 401.
+    ports:
+      - "127.0.0.1:${GRAB_PORT:-8000}:8000"
+
+  # Starts when COMPOSE_PROFILES=tunnel is set in .env (see .env.example).
+  cloudflared:
+    image: cloudflare/cloudflared:2026.9.3
+    profiles: [tunnel]
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:-}
+    depends_on:
+      - app
+
+volumes:
+  grab-data:
+  grab-downloads:

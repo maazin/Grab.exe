@@ -1,0 +1,166 @@
+@import 'tailwindcss';
+@import '@fontsource/geist-sans/400.css';
+@import '@fontsource/geist-sans/500.css';
+@import '@fontsource/geist-sans/600.css';
+
+@font-face {
+  font-family: 'Departure Mono';
+  src: url('./fonts/DepartureMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Design tokens. Light is the default; dark follows the system unless overridden in Settings. */
+:root {
+  --bg: #f4f2ec;
+  --surface: #ffffff;
+  --text: #121212;
+  --muted: #6e6b66;
+  --line: #121212;
+  --accent: #ff5a1f;
+  --on-accent: #121212;
+  --error: #d92d20;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0f0f0e;
+    --surface: #181817;
+    --text: #edebe6;
+    --muted: #8f8c86;
+    --line: #46443f;
+    --accent: #ff6b33;
+    --error: #f04438;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0f0f0e;
+  --surface: #181817;
+  --text: #edebe6;
+  --muted: #8f8c86;
+  --line: #46443f;
+  --accent: #ff6b33;
+  --error: #f04438;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-error: var(--error);
+  --font-sans: 'Geist Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-pixel: 'Departure Mono', ui-monospace, monospace;
+  --shadow-hard: 3px 3px 0 0 var(--line);
+  --ease-snap: cubic-bezier(0, 0, 0.2, 1);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  button,
+  a {
+    touch-action: manipulation;
+  }
+}
+
+@layer components {
+  /* Uppercase pixel labels: wordmark aside, everything in Departure Mono goes through these. */
+  .label {
+    font-family: var(--font-pixel);
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .num {
+    font-family: var(--font-pixel);
+    font-size: 13px;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+  .frame {
+    border: 1.5px solid var(--line);
+    border-radius: 4px;
+  }
+  .press {
+    box-shadow: var(--shadow-hard);
+    transition:
+      transform 120ms var(--ease-snap),
+      box-shadow 120ms var(--ease-snap);
+  }
+  .press:active:not(:disabled) {
+    transform: translate(3px, 3px);
+    box-shadow: none;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+.cursor-blink {
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+}
+@keyframes toast-up {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+}
+.anim-sheet {
+  animation: sheet-up 120ms var(--ease-snap);
+}
+.anim-toast {
+  animation: toast-up 120ms var(--ease-snap);
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-blink,
+  .anim-sheet,
+  .anim-toast {
+    animation: none;
+  }
+  .press {
+    transition: none;
+  }
+}
