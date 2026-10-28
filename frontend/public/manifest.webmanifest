@@ -1,0 +1,15 @@
+{
+  "name": "Grab",
+  "short_name": "Grab",
+  "description": "Download a YouTube video or its audio from a pasted link.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F4F2EC",
+  "theme_color": "#F4F2EC",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

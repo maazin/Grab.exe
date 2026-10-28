@@ -24,6 +24,8 @@ class Settings:
     downloads_dir: Path = Path("/downloads")
     static_dir: Path | None = None
     dev_mode: bool = False
+    # "cloudflare" checks the Access JWT; "tailscale" trusts `tailscale serve` identity headers.
+    auth_mode: str = "cloudflare"
     # Cloudflare Access: team domain like "maazin.cloudflareaccess.com" and the
     # application's audience (AUD) tag.
     cf_team_domain: str = ""
@@ -51,6 +53,7 @@ class Settings:
             downloads_dir=Path(os.environ.get("DOWNLOADS_DIR", "/downloads")),
             static_dir=Path(static) if static else None,
             dev_mode=_bool("DEV_MODE"),
+            auth_mode=os.environ.get("AUTH_MODE", "cloudflare").strip().lower(),
             cf_team_domain=os.environ.get("CF_ACCESS_TEAM_DOMAIN", "").strip().removeprefix("https://").rstrip("/"),
             cf_aud=os.environ.get("CF_ACCESS_AUD", "").strip(),
             allowed_email=os.environ.get("ALLOWED_EMAIL", "").strip().lower(),

@@ -25,6 +25,24 @@ services:
     depends_on:
       - app
 
+  # Starts when COMPOSE_PROFILES=tailscale is set in .env. Joins your tailnet as its own device named "grab"
+  # and serves the app at https://grab.<tailnet>.ts.net, tailnet only (Funnel stays off).
+  # First start: open the login link from `docker compose logs tailscale`, or set TS_AUTHKEY.
+  tailscale:
+    image: tailscale/tailscale:v1.102.5
+    profiles: [tailscale]
+    hostname: grab
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/start.sh"]
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY:-}
+    volumes:
+      - grab-tailscale:/var/lib/tailscale
+      - ./docker/tailscale-start.sh:/start.sh:ro
+    depends_on:
+      - app
+
 volumes:
   grab-data:
   grab-downloads:
+  grab-tailscale:

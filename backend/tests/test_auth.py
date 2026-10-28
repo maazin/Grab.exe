@@ -71,3 +71,36 @@ def test_non_api_paths_are_not_guarded(guarded):
 
 def test_dev_mode_skips_the_check(client):
     assert client.get("/api/system").status_code == 200
+
+
+@pytest.fixture
+def tailnet(settings):
+    settings.dev_mode = False
+    settings.auth_mode = "tailscale"
+    settings.allowed_email = "me@example.com"
+    with TestClient(create_app(settings), base_url="https://grab.tail1234.ts.net") as c:
+        yield c
+
+
+def test_tailscale_identity_passes(tailnet):
+    res = tailnet.get("/api/system", headers={"Tailscale-User-Login": "Me@Example.com"})
+    assert res.status_code == 200
+
+
+def test_tailscale_other_user_is_401(tailnet):
+    assert tailnet.get("/api/system", headers={"Tailscale-User-Login": "stranger@example.com"}).status_code == 401
+
+
+def test_tailscale_without_identity_is_401(tailnet):
+    res = tailnet.get("/api/system")
+    assert res.status_code == 401
+    assert "Tailscale" in res.json()["error"]["message"]
+
+
+def test_tailscale_allows_direct_localhost(settings):
+    settings.dev_mode = False
+    settings.auth_mode = "tailscale"
+    with TestClient(create_app(settings), base_url="http://localhost:8001") as c:
+        assert c.get("/api/system").status_code == 200
+        # Proxied with no identity (Funnel, say) is refused even if the Host looks local.
+        assert c.get("/api/system", headers={"X-Forwarded-For": "203.0.113.9"}).status_code == 401

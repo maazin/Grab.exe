@@ -50,10 +50,35 @@ class AccessVerifier:
         return claims
 
 
+TAILSCALE_LOGIN = "Tailscale-User-Login"
+LOCAL_HOSTS = {"localhost", "127.0.0.1", "[::1]"}
+
+
+def tailscale_allows(settings: Settings, request: Request) -> bool:
+    """`tailscale serve` adds the signed-in user's login to tailnet requests (never to Funnel ones).
+
+    With no login header, only direct requests to localhost on this machine get through; the port is
+    published on 127.0.0.1 only, so nothing else on the network can reach it.
+    """
+    login = request.headers.get(TAILSCALE_LOGIN, "").strip().lower()
+    if login:
+        return not settings.allowed_email or login == settings.allowed_email
+    if request.headers.get("x-forwarded-for"):
+        return False  # came through a proxy (e.g. Funnel) without a tailnet identity
+    host = (request.headers.get("host") or "").rsplit(":", 1)[0].lower()
+    return host in LOCAL_HOSTS
+
+
 def access_middleware(settings: Settings, verifier: AccessVerifier):
     async def middleware(request: Request, call_next):
         if settings.dev_mode or not request.url.path.startswith("/api"):
             return await call_next(request)
+        if settings.auth_mode == "tailscale":
+            if tailscale_allows(settings, request):
+                return await call_next(request)
+            return JSONResponse(
+                GrabError("unauthorized", "Open Grab from a device signed in to your Tailscale.").body(), status_code=401
+            )
         token = request.headers.get(HEADER)
         if not token:
             err = GrabError("unauthorized")

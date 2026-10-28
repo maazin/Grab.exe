@@ -66,6 +66,30 @@ Any always-on box with Docker and 20 GB free: an old laptop with sleep disabled,
 
    Open http://127.0.0.1:8000 on that machine and grab a short video. Then set `DEV_MODE=false` again.
 
+### Run it on this Mac with Tailscale
+
+No domain or Cloudflare needed. A `tailscale` container joins your tailnet as its own device, `grab`, separate from any Tailscale already on the machine. `.env` on the Mac:
+
+```
+AUTH_MODE=tailscale
+ALLOWED_EMAIL=you@your-tailscale-login
+GRAB_PORT=8001
+COMPOSE_PROFILES=tailscale
+```
+
+Start it, then open the login link the container prints and approve the device (once; its state lives in the `grab-tailscale` volume):
+
+```bash
+docker compose up -d --build && docker compose logs tailscale | grep login.tailscale.com
+```
+
+- **Laptop:** http://localhost:8001. In Chrome, ⋮ → Cast, save, and share → Install page as app.
+- **Phone:** install Tailscale, sign in with the same account, open `https://grab.<tailnet>.ts.net` in Safari, then Share → Add to Home Screen.
+
+The container serves the app to your tailnet only ([docker/tailscale-start.sh](docker/tailscale-start.sh), Funnel off). `tailscale serve` adds the signed-in user to each request, and Grab checks it against `ALLOWED_EMAIL`. Requests with no identity get a 401 unless they come straight to localhost on the Mac.
+
+Tailscale expires device keys after 180 days by default. To avoid signing in again, open the `grab` device in the admin console and choose Disable key expiry.
+
 ### Cloudflare Tunnel and Access (go live)
 
 Needs `maazin.site`'s DNS on Cloudflare (still an open question; a separate free domain on Cloudflare works the same way).
